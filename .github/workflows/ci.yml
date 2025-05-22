@@ -1,4 +1,4 @@
-name: Node CI with K6
+name: Node CI with K6 and Report
 
 on:
   push:
@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Set up Node.js
@@ -20,10 +20,36 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
-      - name: Start Server in Background
-        run: node index.js &
+      - name: Start Server
+        run: |
+          node server.js &
+          sleep 3
 
-      - name: Run Load Test using k6
-        uses: grafana/k6-action@v0.2.0
+      - name: Install k6
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gnupg ca-certificates
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 33C235A34C46AA3FFB293709A328C3A2C3C45C06 || true
+          echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install -y k6
+
+      - name: Run k6 Load Test and Save Report
+        run: |
+          k6 run --summary-export=k6-summary.json test.js
+
+      - name: Install HTML Reporter for k6
+        run: |
+          npm install -g xk6-reporter
+
+      - name: Convert JSON Summary to HTML
+        run: |
+          xk6-reporter k6-summary.json > k6-summary.html
+
+      - name: Upload k6 Report as Artifact
+        uses: actions/upload-artifact@v4
         with:
-          filename: test.js
+          name: k6-report
+          path: |
+            k6-summary.json
+            k6-summary.html
