@@ -25,14 +25,10 @@ jobs:
           node server.js &
           sleep 3
 
-      - name: Install k6
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gnupg ca-certificates
-          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 33C235A34C46AA3FFB293709A328C3A2C3C45C06 || true
-          echo "deb https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
-          sudo apt-get update
-          sudo apt-get install -y k6
+      - name: Run Load Test using k6
+        uses: grafana/k6-action@v0.2.0
+        with:
+            filename: test.js
 
       - name: Run k6 Load Test and Save Report
         run: |
