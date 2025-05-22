@@ -29,10 +29,7 @@ jobs:
         uses: grafana/k6-action@v0.2.0
         with:
             filename: test.js
-
-      - name: Run k6 Load Test and Save Report
-        run: |
-          k6 run --summary-export=k6-summary.json test.js
+            args: run --summary-export=k6-summary.json test.js
 
       - name: Install HTML Reporter for k6
         run: |
