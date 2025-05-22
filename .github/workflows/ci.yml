@@ -1,48 +1,33 @@
-name: Node CI with K6 and Report
+name: K6 Load Test with HTML Report
 
-on:
-  push:
-    branches: [main]
+on: [push]
 
 jobs:
-  build-and-test:
+  load-test:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Set up Node.js
+      - name: Install Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '18'
 
-      - name: Install Dependencies
-        run: npm install
+      - name: Install k6-reporter
+        run: npm install -g k6-reporter
 
-      - name: Start Server
-        run: |
-          node server.js &
-          sleep 3
-
-      - name: Run Load Test using k6
+      - name: Run k6 Load Test and Export Summary
         uses: grafana/k6-action@v0.2.0
         with:
-            filename: test.js
-            args: run --summary-export=k6-summary.json test.js
+          args: run --summary-export=summary.json test.js
 
-      - name: Install HTML Reporter for k6
-        run: |
-          npm install -g xk6-reporter
+      - name: Generate HTML Report
+        run: k6-reporter summary.json -o result.html
 
-      - name: Convert JSON Summary to HTML
-        run: |
-          xk6-reporter k6-summary.json > k6-summary.html
-
-      - name: Upload k6 Report as Artifact
-        uses: actions/upload-artifact@v4
+      - name: Upload HTML Report
+        uses: actions/upload-artifact@v3
         with:
-          name: k6-report
-          path: |
-            k6-summary.json
-            k6-summary.html
+          name: k6-html-report
+          path: result.html
