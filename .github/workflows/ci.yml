@@ -23,11 +23,7 @@ jobs:
       - name: Start Server in Background
         run: node index.js &
 
-      - name: Install k6
-        run: |
-          curl -s https://packagecloud.io/install/repositories/loadimpact/k6/script.deb.sh | sudo bash
-          sudo apt-get install k6
-      
-    
-      - name: Run Load Test (1 VU, 1 iteration)
-        run: k6 run test.js
+      - name: Run Load Test using k6
+        uses: grafana/k6-action@v0.2.0
+        with:
+          filename: test.js
